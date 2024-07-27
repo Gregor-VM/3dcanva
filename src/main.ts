@@ -1,91 +1,31 @@
 import './style.css'
 import { simulationConstants } from './utils/config';
-import { init } from './utils/init';
+import { init } from './init';
 import { Camera, Particle, Background } from './utils/3d';
-import { difference, normalizeVector, scaleVector, sumVector, vectorLength } from './utils/helpers';
-//import { Background, Particle } from './utils/utils';
+import { difference, getCubeLines } from './utils/helpers';
 
 const context = init();
-const particles: Particle[] = [];
+let particles: Particle[] = [];
 const camera = new Camera(
-  [simulationConstants.WIDTH / 2,
-  simulationConstants.HEIGHT / 2,
-  400]
+  [simulationConstants.BOXSIZE / 2,
+  simulationConstants.BOXSIZE / 2,
+  simulationConstants.ZOOM]
 );
+(window as any).camera = camera;
 let clicking = false;
 let prevMousePosition: (number | null)[] = [null, null];
+let isPaused = false;
 
-function initParticle(){
+function initParticles(){
+  particles = [];
+  const boxSize = simulationConstants.BOXSIZE;
   const particle_radius = 5;
-  const position_x = simulationConstants.WIDTH / 2;
-  const position_y = simulationConstants.HEIGHT / 2;
-  const position_z = 0
-  const particle1 = new Particle([position_x, position_y, position_z], particle_radius);
-  const particle2 = new Particle([position_x + 100, position_y, position_z], particle_radius);
-  particles.push(particle1)
-  particles.push(particle2)
-}
 
-/*const particles: Particle[] = []
-
-function initParticles(threshold: number = 0){
-  const particles_radius = 5;
-  let position_x = 2 * particles_radius + threshold;
-  let position_y = 2 * particles_radius + threshold;
-
-  for (let i = 0; i < 2; i++){
-    if(position_x >= simulationConstants.WIDTH - 2 * particles_radius){
-      position_x = 2 * particles_radius;
-      position_y += 2 * particles_radius;
-    }
-    const particle = new Particle(position_x, position_y, "red", particles_radius);
-    particles.push(particle);
-    position_x += 2 * particles_radius;
+  for (let i=0;i<simulationConstants.PARTICLES_NUMBER;i++){
+    const particle = new Particle([Math.random() * boxSize, Math.random() * boxSize, Math.random() * boxSize], particle_radius, [Math.random(), Math.random(), Math.random()]);
+    particles.push(particle)
   }
 }
-
-initParticles(0);
-
-
-window.requestAnimationFrame(draw);
-
-function drawBackground(){
-  const background = new Background();
-  background.render(context);
-}
-
-const gravity = .5;
-
-function drawParticles(){
-
-  particles.forEach(particle => {
-    particle.render(context)
-    //particle.g = [0, gravity]
-    particle.maxV = 20;
-    particle.checkCollisions(particles, context);
-    particle.move();
-  });
-
-}
-
-document.getElementById("canvas")?.addEventListener("mousemove", event => {
-  const normalized = [((event.offsetX / simulationConstants.WIDTH)*2)-1, ((event.offsetY / simulationConstants.HEIGHT)*2)-1];
-  particles.forEach((particle) => {
-    particle.g = [normalized[0] * 0.5, normalized[1] * 0.5]
-    particle.color = "purple"
-  })
-})
-
-document.getElementById("canvas")?.addEventListener(("mouseleave"), () => {
-  particles.forEach((particle) => {
-    particle.g = [0, 0]
-  })
-})
-
-document.getElementById("canvas")?.addEventListener("click", event => {
-  const position = [event.offsetX, event.offsetY];
-  particles.push(new Particle(position[0], position[1], "yellow", 15))
-})*/
 
 document.getElementById("canvas")?.addEventListener(("mousedown"), () => {
   clicking = true;
@@ -98,18 +38,20 @@ document.getElementById("canvas")?.addEventListener(("mouseup"), () => {
 
 document.getElementById("canvas")?.addEventListener(("mousemove"), (event) => {
 
+  const sensibilityFactor = 1/20;
   const mousePosition = [event.offsetX, event.offsetY];
 
   if(clicking){
 
     if(prevMousePosition.every(c => c !== null)){
-      const changedPosition = difference(mousePosition, prevMousePosition as number[]);
-      const newPosition = sumVector(camera.position, [...changedPosition, 0]);
-      const center = [simulationConstants.WIDTH / 2, simulationConstants.HEIGHT / 2, 0];
-      const delta = difference(newPosition, center)
-      const scaledDelta = scaleVector(normalizeVector(delta), 400)
-      const finalPosition = sumVector(scaledDelta, center);
-      camera.position = finalPosition;
+      const changedPosition = difference(prevMousePosition as number[], mousePosition);
+
+      camera.angles = [
+        camera.angles[0] + changedPosition[1]*sensibilityFactor,
+        camera.angles[1] + changedPosition[0]*-1*sensibilityFactor,
+        0
+      ]
+
     }
 
     prevMousePosition = mousePosition;
@@ -120,18 +62,57 @@ document.getElementById("canvas")?.addEventListener(("mousemove"), (event) => {
 
 document.getElementById("canvas")?.addEventListener(("wheel"), (e) => {
   e.preventDefault()
-  camera.position = [camera.position[0], camera.position[1], camera.position[2] + e.deltaY]
+  const sensibilityFactor = 10
+  camera.position = [camera.position[0], camera.position[1], camera.position[2] + (e.deltaY * sensibilityFactor)]
 })
 
-initParticle()
+window.addEventListener(("keydown"), (e) => {
+  e.preventDefault()
+  if(e.code === "Space"){
+    isPaused = !isPaused;
+  }
+})
+
+initParticles();
+(window as any).initParticles = initParticles;
 
 function drawParticles(){
 
+
+  //camera.updateCenter()
+
   particles.forEach(particle => {
     particle.render(context, camera)
-    //particle.g = [0, gravity]
-    //particle.checkCollisions(particles, context);
-    //particle.move();
+    if(!isPaused){
+      particle.checkCollisions(particles);
+      if(simulationConstants.GRAVITY_ON) particle.gravityChecks(particles);
+      particle.move();
+    }
+  });
+
+  //camera.center = particles[0].position;
+  //camera.position = [particles[0].position[0], particles[0].position[1], camera.position[2]]
+
+}
+
+function drawLines(){
+  
+  const boxSize = simulationConstants.BOXSIZE;
+  const lines = [
+    ...(getCubeLines(
+      [[0, 0, 0],
+      [boxSize, 0, 0],
+      [0, boxSize, 0],
+      [0, 0, boxSize],
+      [boxSize, boxSize, 0],
+      [0, boxSize, boxSize],
+      [boxSize, 0, boxSize],
+      [boxSize, boxSize, boxSize]], boxSize
+    ))
+  ]
+
+  lines.forEach(line => {
+    line.render(context, camera)
   });
 
 }
@@ -144,6 +125,7 @@ function drawBackground(){
 function draw(){
   drawBackground()
   drawParticles()
+  drawLines()
   window.requestAnimationFrame(draw);
 }
 

@@ -1,4 +1,33 @@
-export const simulationConstants = {
+export const config = {
   WIDTH: 800,
-  HEIGHT: 600
+  HEIGHT: 600,
+  BOXSIZE: 1000,
+  ZOOM: 4000,
+  BORDER_COLLISION_LOSS: 25,
+  COLLISION_LOSS: 0,
+  GRAVITY_CONSTANT: 10,
+  GRAVITY_MASS_CONTIBUTION: 99,
+  GRAVITY_ON: true,
+  COLLISIONS_ON: true,
+  PARTICLES_NUMBER: 2
 }
+
+class Configurations {
+
+  constructor(
+    public WIDTH = config.WIDTH,
+    public HEIGHT = config.HEIGHT,
+    public BOXSIZE = config.BOXSIZE,
+    public ZOOM = config.ZOOM,
+    public COLLISION_LOSS = config.COLLISION_LOSS,
+    public BORDER_COLLISION_LOSS = config.BORDER_COLLISION_LOSS,
+    public GRAVITY_CONSTANT = config.GRAVITY_CONSTANT,
+    public GRAVITY_MASS_CONTIBUTION = config.GRAVITY_MASS_CONTIBUTION,
+    public GRAVITY_ON = config.GRAVITY_ON,
+    public COLLISIONS_ON = config.COLLISIONS_ON,
+    public PARTICLES_NUMBER = config.PARTICLES_NUMBER
+  ){}
+
+}
+
+export const simulationConstants = new Configurations() 
