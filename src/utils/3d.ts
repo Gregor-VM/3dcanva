@@ -56,6 +56,10 @@ export class Particle {
       }
     })
   }
+  
+  normalize = (v: number) => {
+    return Math.min(150 + 7.75*v, 255);
+  }
 
   checkParticlesCollisions(objects: Particle[]){
 
@@ -67,18 +71,14 @@ export class Particle {
           return true
         } else {
         return false
-      }
+        }
     })
 
     if(closeObjects.length > 0) {
       this.color = "blue"
     }
     else {
-      const normalize = (v: number) => {
-        return Math.min(150 + 7.75*v, 255);
-      }
-      this.color = `rgb(${normalize(this.v[0])}, ${normalize(this.v[1])}, ${normalize(this.v[2])})`
-      //this.color = "red"
+      this.color = `rgb(${this.normalize(this.v[0])}, ${this.normalize(this.v[1])}, ${this.normalize(this.v[2])})`
     }
 
     const loss = (100 - simulationConstants.COLLISION_LOSS) / 100;
@@ -109,14 +109,17 @@ export class Particle {
   }
 
   gravityChecks(objects: Particle[]){
+    const gravity_constant = simulationConstants.GRAVITY_CONSTANT/100;
+    const gravity_mass_contribution = (100 - simulationConstants.GRAVITY_MASS_CONTIBUTION);
+    const gravity_distance_contribution = simulationConstants.GRAVITY_DISTANCE_CONTRIBUTION / 100;
     objects.forEach((object) => {
       if(object === this) return false;
-      const gravity_constant = simulationConstants.GRAVITY_CONSTANT/100;
-      const gravity_mass_contribution = (100 - simulationConstants.GRAVITY_MASS_CONTIBUTION);
+      
       const vector = difference(object.position, this.position);
-      const normalized = vectorLength(vector)*(object.radius*gravity_mass_contribution);
+      const normalized = dotProduct(vector, vector)**gravity_distance_contribution;
+      const scaledValue = normalized*(object.radius*gravity_mass_contribution);
       this.a = scaleVector(this.a, gravity_constant);
-      const vectorNormalized = scaleVector(vector, 1/normalized);
+      const vectorNormalized = scaleVector(vector, 1/scaledValue);
       this.a = sumVector(this.a, vectorNormalized);
     })
   }

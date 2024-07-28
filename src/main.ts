@@ -15,6 +15,8 @@ const camera = new Camera(
 let clicking = false;
 let prevMousePosition: (number | null)[] = [null, null];
 let isPaused = false;
+let fps = 0;
+let fpsAvg = 0;
 
 function initParticles(){
   particles = [];
@@ -78,14 +80,13 @@ initParticles();
 
 function drawParticles(){
 
-
-  //camera.updateCenter()
-
   particles.forEach(particle => {
     particle.render(context, camera)
     if(!isPaused){
       particle.checkCollisions(particles);
+      console.time('gravity')
       if(simulationConstants.GRAVITY_ON) particle.gravityChecks(particles);
+      console.timeEnd('gravity')
       particle.move();
     }
   });
@@ -122,10 +123,27 @@ function drawBackground(){
   background.render(context);
 }
 
+setInterval(() => {
+
+  fpsAvg = (fpsAvg + fps) / 2;
+  fps = 0;
+
+}, 1000);
+
+function fpsCounter(){
+  fps += 1;
+  context.font = "15px serif";
+  context.fillText(String(Math.round(fpsAvg)) + " FPS", 5, 15);
+}
+
 function draw(){
+
   drawBackground()
   drawParticles()
   drawLines()
+
+  fpsCounter()
+
   window.requestAnimationFrame(draw);
 }
 
