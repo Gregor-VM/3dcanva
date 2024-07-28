@@ -2,10 +2,11 @@ import './style.css'
 import { simulationConstants } from './utils/config';
 import { init } from './init';
 import { Camera, Particle, Background } from './utils/3d';
-import { difference, getCubeLines } from './utils/helpers';
+import { chunckCube, difference, divideCube, getCubeLines, getCubePoints, isParticleInCube } from './utils/helpers';
 
 const context = init();
-let particles: Particle[] = [];
+let particles: Particle[] = [
+];
 const camera = new Camera(
   [simulationConstants.BOXSIZE / 2,
   simulationConstants.BOXSIZE / 2,
@@ -81,10 +82,32 @@ initParticles();
 
 function drawParticles(){
 
+  const dividedParticles: Particle[][] = [];
+  for (let i=0;i<64;i++) dividedParticles.push([]);
+
+  const boxSize = simulationConstants.BOXSIZE;
+  const dividedPoints = chunckCube([0, 0, 0], boxSize, 1);
+
+  particles.forEach(particle => {
+    dividedPoints.forEach((points, i) => {
+      if(isParticleInCube(points, particle.position)){
+        dividedParticles[i].push(particle)
+      }
+    })
+  })
+
+  dividedParticles.forEach(chunck => {
+    chunck.forEach(particle => {
+      if(simulationConstants.COLLISIONS_ON) {
+        particle.checkParticlesCollisions(chunck);
+      }
+    })
+  })
+
   particles.forEach(particle => {
     particle.render(context, camera)
     if(!isPaused){
-      particle.checkCollisions(particles);
+      if(!simulationConstants.DISABLED_BORDERS) particle.checkBorderCollisions();
       if(simulationConstants.GRAVITY_ON) particle.gravityChecks(particles);
       particle.move();
     }
@@ -98,18 +121,19 @@ function drawParticles(){
 function drawLines(){
   
   const boxSize = simulationConstants.BOXSIZE;
-  const lines = [
-    ...(getCubeLines(
-      [[0, 0, 0],
-      [boxSize, 0, 0],
-      [0, boxSize, 0],
-      [0, 0, boxSize],
-      [boxSize, boxSize, 0],
-      [0, boxSize, boxSize],
-      [boxSize, 0, boxSize],
-      [boxSize, boxSize, boxSize]], boxSize
-    ))
+  const mainCube = getCubePoints([0, 0, 0], boxSize)
+  let lines = [
+    ...(getCubeLines(mainCube, boxSize))
   ]
+
+  /*const dividedPoints = divideCube([0, 0, 0], boxSize)
+  const dividedLines = dividedPoints.map( points => getCubeLines(points, boxSize/2))
+  lines = [...lines, ...(dividedLines.flat())]*/
+
+  /*const dividedPoints = chunckCube([0, 0, 0], boxSize, 1);
+  const dividedLines = dividedPoints.map( (points: number[][]) => getCubeLines(points, boxSize/4))
+  lines = [...lines, ...(dividedLines.flat())]*/
+  
 
   lines.forEach(line => {
     line.render(context, camera)

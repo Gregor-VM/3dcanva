@@ -103,11 +103,6 @@ export class Particle {
 
   }
 
-  checkCollisions(objects: Particle[]){
-    if(simulationConstants.COLLISIONS_ON) this.checkParticlesCollisions(objects);
-    if(!simulationConstants.DISABLED_BORDERS) this.checkBorderCollisions();
-  }
-
   gravityChecks(objects: Particle[]){
     const gravity_constant = simulationConstants.GRAVITY_CONSTANT/100;
     const gravity_mass_contribution = (100 - simulationConstants.GRAVITY_MASS_CONTIBUTION);

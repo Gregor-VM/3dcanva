@@ -1,5 +1,6 @@
 import { Line } from "./3d";
 import { simulationConstants } from "./config";
+import { Particle } from "./utils";
 
 export function vectorLength(vector: number[]){
   let sum = 0;
@@ -103,3 +104,56 @@ export function getCubeLines(points: number[][], boxSize: number, color = "rgba(
   })
   return lines;
 }
+
+export function getCubePoints(origin = [0, 0, 0], boxSize: number){
+
+  return [origin,
+      [origin[0] + boxSize, origin[1], origin[2]],
+      [origin[0], origin[1] + boxSize, origin[2]],
+      [origin[0], origin[1], origin[2] + boxSize],
+      [origin[0] + boxSize, origin[1] + boxSize, origin[2]],
+      [origin[0], origin[1] + boxSize, origin[2] + boxSize],
+      [origin[0] + boxSize, origin[1], origin[2] + boxSize],
+      [origin[0] + boxSize, origin[1] + boxSize, origin[2] + boxSize]]
+  
+}
+
+export function divideCube(origin = [0, 0, 0], boxSize: number){
+  const cubeCenter = boxSize / 2;
+  const cubesOrigins = getCubePoints(origin, cubeCenter);
+  return cubesOrigins.map(cubeOrigin => {
+    return getCubePoints(cubeOrigin, cubeCenter);
+  });
+}
+
+export function chunckCube(origin = [0, 0, 0], boxSize: number, iterations: number, chunckedCube: number[][][][] = []): number[][][]{
+  const firstChunck = divideCube(origin, boxSize);
+  if(iterations === 0) chunckedCube.push(divideCube(origin, boxSize))
+  if(iterations > 0) {
+    iterations -= 1;
+    firstChunck.forEach((points) => {
+      chunckCube(points[0], boxSize/2, iterations, chunckedCube);
+    })
+
+  }
+  return chunckedCube.flat()
+}
+
+export function isParticleInCube (points: number[][], position: number[]){
+
+  let minX = Math.min(...points.map(vertex => vertex[0]));
+  let minY = Math.min(...points.map(vertex => vertex[1]));
+  let minZ = Math.min(...points.map(vertex => vertex[2]));
+  let maxX = Math.max(...points.map(vertex => vertex[0]));
+  let maxY = Math.max(...points.map(vertex => vertex[1]));
+  let maxZ = Math.max(...points.map(vertex => vertex[2]));
+
+  return (
+    position[0] >= minX && position[0] <= maxX &&
+    position[1] >= minY && position[1] <= maxY &&
+    position[2] >= minZ && position[2] <= maxZ
+  );
+
+}
+
+
