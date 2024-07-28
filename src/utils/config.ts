@@ -10,7 +10,9 @@ export const config = {
   GRAVITY_DISTANCE_CONTRIBUTION: 50,
   GRAVITY_ON: true,
   COLLISIONS_ON: true,
-  PARTICLES_NUMBER: 200
+  PARTICLES_NUMBER: 500,
+  SHOW_FPS: true,
+  DISABLED_BORDERS: false
 }
 
 class Configurations {
@@ -27,7 +29,9 @@ class Configurations {
     public GRAVITY_ON = config.GRAVITY_ON,
     public COLLISIONS_ON = config.COLLISIONS_ON,
     public PARTICLES_NUMBER = config.PARTICLES_NUMBER,
-    public GRAVITY_DISTANCE_CONTRIBUTION = config.GRAVITY_DISTANCE_CONTRIBUTION
+    public GRAVITY_DISTANCE_CONTRIBUTION = config.GRAVITY_DISTANCE_CONTRIBUTION,
+    public SHOW_FPS = config.SHOW_FPS,
+    public DISABLED_BORDERS = config.DISABLED_BORDERS
   ){}
 
 }

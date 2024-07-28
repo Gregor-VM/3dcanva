@@ -19,6 +19,7 @@ let fps = 0;
 let fpsAvg = 0;
 
 function initParticles(){
+  fps = 0; fpsAvg = 0;
   particles = [];
   const boxSize = simulationConstants.BOXSIZE;
   const particle_radius = 5;
@@ -84,9 +85,7 @@ function drawParticles(){
     particle.render(context, camera)
     if(!isPaused){
       particle.checkCollisions(particles);
-      console.time('gravity')
       if(simulationConstants.GRAVITY_ON) particle.gravityChecks(particles);
-      console.timeEnd('gravity')
       particle.move();
     }
   });
@@ -125,9 +124,10 @@ function drawBackground(){
 
 setInterval(() => {
 
-  fpsAvg = (fpsAvg + fps) / 2;
-  fps = 0;
-
+  if(simulationConstants.SHOW_FPS){
+    fpsAvg = (fpsAvg + fps) / 2;
+    fps = 0;
+  }
 }, 1000);
 
 function fpsCounter(){
@@ -140,9 +140,9 @@ function draw(){
 
   drawBackground()
   drawParticles()
-  drawLines()
+  if(!simulationConstants.DISABLED_BORDERS) drawLines()
 
-  fpsCounter()
+  if(simulationConstants.SHOW_FPS) fpsCounter()
 
   window.requestAnimationFrame(draw);
 }

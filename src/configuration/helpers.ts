@@ -36,7 +36,7 @@ export function createCheckbox(id: string, name: string, value = true, property:
   container.appendChild(label);
   const input = document.createElement('input');
   input.setAttribute("type", "checkbox");
-  input.setAttribute("checked", String(value));
+  input.checked = value;
   input.setAttribute("id", id);
   input.classList.add('checkbox');
 

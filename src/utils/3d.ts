@@ -105,7 +105,7 @@ export class Particle {
 
   checkCollisions(objects: Particle[]){
     if(simulationConstants.COLLISIONS_ON) this.checkParticlesCollisions(objects);
-    this.checkBorderCollisions();
+    if(!simulationConstants.DISABLED_BORDERS) this.checkBorderCollisions();
   }
 
   gravityChecks(objects: Particle[]){

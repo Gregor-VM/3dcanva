@@ -13,6 +13,8 @@ export function initConfiguration(){
     createSlider('gravityMass', 'Gravity Mass Contribution', 1, 99, simulationConstants.GRAVITY_MASS_CONTIBUTION, 'GRAVITY_MASS_CONTIBUTION')
     createCheckbox('gravity_on', 'Enabled Gravity', simulationConstants.GRAVITY_ON, 'GRAVITY_ON')
     createCheckbox('collision_on', 'Enabled Collisions', simulationConstants.COLLISIONS_ON, 'COLLISIONS_ON')
+    createCheckbox('disabled_borders', 'Disable Borders', simulationConstants.DISABLED_BORDERS, 'DISABLED_BORDERS')
+    createCheckbox('show_fps', 'Show FPS', simulationConstants.SHOW_FPS, 'SHOW_FPS')
     createButton('Reset', () => {
       (window as any).initParticles()
     })
