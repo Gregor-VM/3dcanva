@@ -2,7 +2,7 @@
 
 This is a little experiment that I made for reviewing some of the concepts of linear algebra that I learn by self-studying and applying them into some 3d graphics. That's why I thought making a little 3d view of some particles bouncing around from scratch using Canvas API was the way to go.
 
-[Live Demo]()
+[Live Demo](https://3dcanva.netlify.app)
 
 ### Preview
 
