@@ -1,6 +1,5 @@
 import { Line } from "./3d";
 import { simulationConstants } from "./config";
-import { Particle } from "./utils";
 
 export function vectorLength(vector: number[]){
   let sum = 0;

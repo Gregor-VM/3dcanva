@@ -17,7 +17,7 @@ export function createSlider(id: string, name: string, min = 0, max = 100, value
 
   input.oninput = (ev: any) => {
     const value = ev.target.valueAsNumber;
-    simulationConstants[property] = value;
+    (simulationConstants[property] as any) = value;
     if(property === "ZOOM" || property === "BOXSIZE") (window as any).camera.updateCenter();
   }
 

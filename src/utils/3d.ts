@@ -75,7 +75,7 @@ export class Particle {
     })
 
     if(closeObjects.length > 0) {
-      this.color = "blue"
+      if(simulationConstants.HIGHLIGHT_COLLISIONS) this.color = "blue"
     }
     else {
       this.color = `rgb(${this.normalize(this.v[0])}, ${this.normalize(this.v[1])}, ${this.normalize(this.v[2])})`
@@ -103,13 +103,9 @@ export class Particle {
 
   }
 
-  gravityChecks(objects: Particle[]){
-    const gravity_constant = simulationConstants.GRAVITY_CONSTANT/100;
-    const gravity_mass_contribution = (100 - simulationConstants.GRAVITY_MASS_CONTIBUTION);
-    const gravity_distance_contribution = simulationConstants.GRAVITY_DISTANCE_CONTRIBUTION / 100;
+  gravityChecks(objects: Particle[], gravity_constant: number, gravity_mass_contribution: number, gravity_distance_contribution: number){
     objects.forEach((object) => {
       if(object === this) return false;
-      
       const vector = difference(object.position, this.position);
       const normalized = dotProduct(vector, vector)**gravity_distance_contribution;
       const scaledValue = normalized*(object.radius*gravity_mass_contribution);
@@ -129,11 +125,6 @@ export class Camera{
     public position = [0, 0, 0],
     public pov = 0.001,
     public angles = [0, 0, 0],
-    /*public center = [
-      simulationConstants.WIDTH / 2,
-      simulationConstants.HEIGHT / 2,
-      0
-    ]*/
     public center = [
       simulationConstants.BOXSIZE / 2,
       simulationConstants.BOXSIZE / 2,

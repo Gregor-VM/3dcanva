@@ -8,11 +8,13 @@ export const config = {
   GRAVITY_CONSTANT: 10,
   GRAVITY_MASS_CONTIBUTION: 99,
   GRAVITY_DISTANCE_CONTRIBUTION: 50,
-  GRAVITY_ON: false,
-  COLLISIONS_ON: false,
-  PARTICLES_NUMBER: 300,
-  SHOW_FPS: true,
-  DISABLED_BORDERS: false
+  GRAVITY_ON: true,
+  COLLISIONS_ON: true,
+  PARTICLES_NUMBER: 2,
+  SHOW_FPS: false,
+  DISABLED_BORDERS: false,
+  SHOW_CHUNCKS: false,
+  HIGHLIGHT_COLLISIONS: false
 }
 
 class Configurations {
@@ -31,7 +33,9 @@ class Configurations {
     public PARTICLES_NUMBER = config.PARTICLES_NUMBER,
     public GRAVITY_DISTANCE_CONTRIBUTION = config.GRAVITY_DISTANCE_CONTRIBUTION,
     public SHOW_FPS = config.SHOW_FPS,
-    public DISABLED_BORDERS = config.DISABLED_BORDERS
+    public DISABLED_BORDERS = config.DISABLED_BORDERS,
+    public SHOW_CHUNCKS = config.SHOW_CHUNCKS,
+    public HIGHLIGHT_COLLISIONS = config.HIGHLIGHT_COLLISIONS
   ){}
 
 }

@@ -2,9 +2,7 @@ import './style.css'
 import { simulationConstants } from './utils/config';
 import { init } from './init';
 import { Camera, Particle, Background } from './utils/3d';
-import { chunckCube, difference, divideCube, getCubeLines, getCubePoints, isParticleInCube, sumVector } from './utils/helpers';
-
-const worker = new Worker("worker.js");
+import { chunckCube, difference, getCubeLines, getCubePoints, isParticleInCube } from './utils/helpers';
 
 const context = init();
 let particles: Particle[] = [
@@ -70,11 +68,12 @@ document.getElementById("canvas")?.addEventListener(("wheel"), (e) => {
   e.preventDefault()
   const sensibilityFactor = 10
   camera.position = [camera.position[0], camera.position[1], camera.position[2] + (e.deltaY * sensibilityFactor)]
+  simulationConstants.ZOOM = camera.position[2] + (e.deltaY * sensibilityFactor);
 })
 
 window.addEventListener(("keydown"), (e) => {
-  e.preventDefault()
   if(e.code === "Space"){
+    e.preventDefault()
     isPaused = !isPaused;
   }
 })
@@ -106,39 +105,24 @@ function drawParticles(){
     })
   })
 
-  /*if(simulationConstants.GRAVITY_ON && (fps % 5) === 0) {
-    worker.postMessage(
-      [
-        particles.map(p => ({position: p.position, radius: p.radius, a: p.a})), 
-        simulationConstants.GRAVITY_DISTANCE_CONTRIBUTION / 100,
-        (100 - simulationConstants.GRAVITY_MASS_CONTIBUTION), 
-        simulationConstants.GRAVITY_CONSTANT/100
-      ]
-    );
-  }*/
-  
+  const gravity_constant = simulationConstants.GRAVITY_CONSTANT/100;
+  const gravity_mass_contribution = (100 - simulationConstants.GRAVITY_MASS_CONTIBUTION);
+  const gravity_distance_contribution = simulationConstants.GRAVITY_DISTANCE_CONTRIBUTION / 100;
+
   particles.forEach(particle => {
     particle.render(context, camera)
     if(!isPaused){
       if(!simulationConstants.DISABLED_BORDERS) particle.checkBorderCollisions();
-      if(simulationConstants.GRAVITY_ON) particle.gravityChecks(particles);
+      if(simulationConstants.GRAVITY_ON) particle.gravityChecks(particles, gravity_constant, gravity_mass_contribution, gravity_distance_contribution);
       particle.move();
     }
   });
 
 
+  // THIS CODE IS FOR FIXING THE VIEW TO A PARTICLE
   //camera.center = particles[0].position;
   //camera.position = [particles[0].position[0], particles[0].position[1], camera.position[2]]
 
-}
-
-worker.onmessage = e => {
-  //console.log(e.data)
-  const {accelarations} = e.data;
-  accelarations.forEach(([i, a]: any) => {
-    particles[i].a = a;
-  })
-  //particles[index].a = a;
 }
 
 function drawLines(){
@@ -149,15 +133,13 @@ function drawLines(){
     ...(getCubeLines(mainCube, boxSize))
   ]
 
-  /*const dividedPoints = divideCube([0, 0, 0], boxSize)
-  const dividedLines = dividedPoints.map( points => getCubeLines(points, boxSize/2))
-  lines = [...lines, ...(dividedLines.flat())]*/
+  if(simulationConstants.SHOW_CHUNCKS){
+    const dividedPoints = chunckCube([0, 0, 0], boxSize, 1);
+    const dividedLines = dividedPoints.map( (points: number[][]) => getCubeLines(points, boxSize/4, "rgba(255, 255, 255, 0.01)"))
+    lines = [...lines, ...(dividedLines.flat())]
+  }
 
-  /*const dividedPoints = chunckCube([0, 0, 0], boxSize, 1);
-  const dividedLines = dividedPoints.map( (points: number[][]) => getCubeLines(points, boxSize/4))
-  lines = [...lines, ...(dividedLines.flat())]*/
   
-
   lines.forEach(line => {
     line.render(context, camera)
   });
@@ -170,7 +152,6 @@ function drawBackground(){
 }
 
 setInterval(() => {
-
   if(simulationConstants.SHOW_FPS){
     fpsAvg = (fpsAvg + fps) / 2;
     fps = 0;
@@ -190,6 +171,10 @@ function draw(){
   if(!simulationConstants.DISABLED_BORDERS) drawLines()
 
   if(simulationConstants.SHOW_FPS) fpsCounter()
+  if(!simulationConstants.SHOW_FPS) {
+    fps = 0;
+    fpsAvg = 0
+  }
 
   window.requestAnimationFrame(draw);
 }

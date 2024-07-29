@@ -11,6 +11,7 @@ export function init(){
             width="${simulationConstants.WIDTH}" 
             id="canvas"> 
           </canvas> 
+          <small>Press "Space" to pause</small>
       </div>
     `
 
