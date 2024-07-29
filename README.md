@@ -6,7 +6,7 @@ This is a little experiment that I made for reviewing some of the concepts of li
 
 ### Preview
 
-![](./public/preview.mp4)
+https://github.com/user-attachments/assets/a2e2c43c-ca42-4ca1-b126-496597a9ecbc
 
 ### Built with
 
