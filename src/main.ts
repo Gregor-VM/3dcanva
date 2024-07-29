@@ -2,7 +2,9 @@ import './style.css'
 import { simulationConstants } from './utils/config';
 import { init } from './init';
 import { Camera, Particle, Background } from './utils/3d';
-import { chunckCube, difference, divideCube, getCubeLines, getCubePoints, isParticleInCube } from './utils/helpers';
+import { chunckCube, difference, divideCube, getCubeLines, getCubePoints, isParticleInCube, sumVector } from './utils/helpers';
+
+const worker = new Worker("worker.js");
 
 const context = init();
 let particles: Particle[] = [
@@ -104,6 +106,17 @@ function drawParticles(){
     })
   })
 
+  /*if(simulationConstants.GRAVITY_ON && (fps % 5) === 0) {
+    worker.postMessage(
+      [
+        particles.map(p => ({position: p.position, radius: p.radius, a: p.a})), 
+        simulationConstants.GRAVITY_DISTANCE_CONTRIBUTION / 100,
+        (100 - simulationConstants.GRAVITY_MASS_CONTIBUTION), 
+        simulationConstants.GRAVITY_CONSTANT/100
+      ]
+    );
+  }*/
+  
   particles.forEach(particle => {
     particle.render(context, camera)
     if(!isPaused){
@@ -113,9 +126,19 @@ function drawParticles(){
     }
   });
 
+
   //camera.center = particles[0].position;
   //camera.position = [particles[0].position[0], particles[0].position[1], camera.position[2]]
 
+}
+
+worker.onmessage = e => {
+  //console.log(e.data)
+  const {accelarations} = e.data;
+  accelarations.forEach(([i, a]: any) => {
+    particles[i].a = a;
+  })
+  //particles[index].a = a;
 }
 
 function drawLines(){

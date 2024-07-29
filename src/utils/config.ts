@@ -10,7 +10,7 @@ export const config = {
   GRAVITY_DISTANCE_CONTRIBUTION: 50,
   GRAVITY_ON: false,
   COLLISIONS_ON: false,
-  PARTICLES_NUMBER: 500,
+  PARTICLES_NUMBER: 300,
   SHOW_FPS: true,
   DISABLED_BORDERS: false
 }
