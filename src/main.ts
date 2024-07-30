@@ -2,7 +2,7 @@ import './style.css'
 import { simulationConstants } from './utils/config';
 import { init } from './init';
 import { Camera, Particle, Background } from './utils/3d';
-import { chunckCube, difference, getCubeLines, getCubePoints, isParticleInCube, scaleVector, sumVector, vectorLength } from './utils/helpers';
+import { chunckCube, cubeBoundaries, difference, getCubeLines, getCubePoints, isParticleInCube, scaleVector, sumVector, vectorLength } from './utils/helpers';
 
 const context = init();
 let particles: Particle[] = [
@@ -15,6 +15,8 @@ const camera = new Camera(
 (window as any).camera = camera;
 let clicking = false;
 let prevMousePosition: (number | null)[] = [null, null];
+let prevBoxSize = simulationConstants.BOXSIZE;
+let prevCubeBoundaries: any = null;
 let isPaused = false;
 let fps = 0;
 let fpsAvg = 0;
@@ -78,6 +80,18 @@ window.addEventListener(("keydown"), (e) => {
   }
 })
 
+
+function getCubeBoundaries(){
+  const boxSize = simulationConstants.BOXSIZE;
+  if(prevBoxSize === boxSize && prevCubeBoundaries) return prevCubeBoundaries;
+  const dividedPoints = chunckCube([0, 0, 0], boxSize, 1);
+  const minMaxCubePoints = dividedPoints.map(points => {
+    return cubeBoundaries(points);
+  })
+  prevCubeBoundaries = [...minMaxCubePoints];
+  return minMaxCubePoints;
+}
+
 initParticles();
 (window as any).initParticles = initParticles;
 
@@ -94,22 +108,15 @@ function drawParticles(){
   const gravity_distance_contribution = simulationConstants.GRAVITY_DISTANCE_CONTRIBUTION / 100;
   const gravity_approximation = (1 - simulationConstants.GRAVITY_APPROXIMATION / 100);
 
-  const dividedPoints = chunckCube([0, 0, 0], boxSize, 1);
-
-  /*if(gravity_on || collisions_on) particles.forEach(particle => {
-    dividedPoints.forEach((points, i) => {
-      if(isParticleInCube(points, particle.position)){
-        dividedParticles[i].push(particle)
-      }
-    })
-  })*/
+  const chunckBoundaries = getCubeBoundaries();
 
   if(gravity_on || collisions_on){
+
     const checkedParticles = new Set()
-    for(let i=0;i<dividedPoints.length;i++){
+    for(let i=0;i<chunckBoundaries.length;i++){
       for(let j=0;j<particles.length;j++){
         if(checkedParticles.has(particles[j])) continue;
-        if(isParticleInCube(dividedPoints[i], particles[j].position)){
+        if(isParticleInCube(chunckBoundaries[i], particles[j].position)){
           dividedParticles[i].push(particles[j])
           checkedParticles.add(particles[j])
         }
@@ -174,7 +181,6 @@ function drawParticles(){
     particle.render(context, camera)
     if(!isPaused){
       if(!simulationConstants.DISABLED_BORDERS) particle.checkBorderCollisions();
-      //if(simulationConstants.GRAVITY_ON) particle.gravityChecks(particles, gravity_constant, gravity_mass_contribution, gravity_distance_contribution);
       particle.move();
     }
   });

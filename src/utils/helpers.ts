@@ -138,7 +138,20 @@ export function chunckCube(origin = [0, 0, 0], boxSize: number, iterations: numb
   return chunckedCube.flat()
 }
 
-export function isParticleInCube (points: number[][], position: number[]){
+export function isParticleInCube (cubeBounds: {
+  minX: number, minY: number, minZ: number, maxX: number,
+  maxY: number, maxZ: number
+}, position: number[]){
+
+  return (
+    position[0] >= cubeBounds.minX && position[0] <= cubeBounds.maxX &&
+    position[1] >= cubeBounds.minY && position[1] <= cubeBounds.maxY &&
+    position[2] >= cubeBounds.minZ && position[2] <= cubeBounds.maxZ
+  );
+
+}
+
+export function cubeBoundaries (points: number[][]){
 
   let minX = Math.min(...points.map(vertex => vertex[0]));
   let minY = Math.min(...points.map(vertex => vertex[1]));
@@ -147,12 +160,8 @@ export function isParticleInCube (points: number[][], position: number[]){
   let maxY = Math.max(...points.map(vertex => vertex[1]));
   let maxZ = Math.max(...points.map(vertex => vertex[2]));
 
-  return (
-    position[0] >= minX && position[0] <= maxX &&
-    position[1] >= minY && position[1] <= maxY &&
-    position[2] >= minZ && position[2] <= maxZ
-  );
+  return {
+    minX, minY, minZ, maxX, maxY, maxZ
+  }
 
 }
-
-
