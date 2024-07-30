@@ -14,7 +14,8 @@ export const config = {
   SHOW_FPS: false,
   DISABLED_BORDERS: false,
   SHOW_CHUNCKS: false,
-  HIGHLIGHT_COLLISIONS: false
+  HIGHLIGHT_COLLISIONS: false,
+  GRAVITY_APPROXIMATION: 50
 }
 
 class Configurations {
@@ -35,7 +36,8 @@ class Configurations {
     public SHOW_FPS = config.SHOW_FPS,
     public DISABLED_BORDERS = config.DISABLED_BORDERS,
     public SHOW_CHUNCKS = config.SHOW_CHUNCKS,
-    public HIGHLIGHT_COLLISIONS = config.HIGHLIGHT_COLLISIONS
+    public HIGHLIGHT_COLLISIONS = config.HIGHLIGHT_COLLISIONS,
+    public GRAVITY_APPROXIMATION = config.GRAVITY_APPROXIMATION
   ){}
 
 }

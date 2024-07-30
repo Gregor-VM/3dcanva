@@ -2,7 +2,7 @@ import './style.css'
 import { simulationConstants } from './utils/config';
 import { init } from './init';
 import { Camera, Particle, Background } from './utils/3d';
-import { chunckCube, difference, getCubeLines, getCubePoints, isParticleInCube } from './utils/helpers';
+import { chunckCube, difference, getCubeLines, getCubePoints, isParticleInCube, scaleVector, sumVector, vectorLength } from './utils/helpers';
 
 const context = init();
 let particles: Particle[] = [
@@ -87,33 +87,94 @@ function drawParticles(){
   for (let i=0;i<64;i++) dividedParticles.push([]);
 
   const boxSize = simulationConstants.BOXSIZE;
+  const gravity_on = simulationConstants.GRAVITY_ON;
+  const collisions_on = simulationConstants.COLLISIONS_ON;
+  const gravity_constant = simulationConstants.GRAVITY_CONSTANT/100;
+  const gravity_mass_contribution = (100 - simulationConstants.GRAVITY_MASS_CONTIBUTION);
+  const gravity_distance_contribution = simulationConstants.GRAVITY_DISTANCE_CONTRIBUTION / 100;
+  const gravity_approximation = (1 - simulationConstants.GRAVITY_APPROXIMATION / 100);
+
   const dividedPoints = chunckCube([0, 0, 0], boxSize, 1);
 
-  particles.forEach(particle => {
+  /*if(gravity_on || collisions_on) particles.forEach(particle => {
     dividedPoints.forEach((points, i) => {
       if(isParticleInCube(points, particle.position)){
         dividedParticles[i].push(particle)
       }
     })
-  })
+  })*/
 
-  dividedParticles.forEach(chunck => {
+  if(gravity_on || collisions_on){
+    const checkedParticles = new Set()
+    for(let i=0;i<dividedPoints.length;i++){
+      for(let j=0;j<particles.length;j++){
+        if(checkedParticles.has(particles[j])) continue;
+        if(isParticleInCube(dividedPoints[i], particles[j].position)){
+          dividedParticles[i].push(particles[j])
+          checkedParticles.add(particles[j])
+        }
+      }
+    }
+  }
+
+  const approximationByChunck = dividedParticles.map(() => ({
+    position: [0, 0, 0],
+    radius: 0
+  }))
+
+  dividedParticles.forEach((chunck) => {
     chunck.forEach(particle => {
-      if(simulationConstants.COLLISIONS_ON) {
+      if(collisions_on) {
         particle.checkParticlesCollisions(chunck);
       }
     })
   })
 
-  const gravity_constant = simulationConstants.GRAVITY_CONSTANT/100;
-  const gravity_mass_contribution = (100 - simulationConstants.GRAVITY_MASS_CONTIBUTION);
-  const gravity_distance_contribution = simulationConstants.GRAVITY_DISTANCE_CONTRIBUTION / 100;
+  if(gravity_on) dividedParticles.forEach((chunck, i) => {
+    chunck.forEach(particle => {
+      approximationByChunck[i].radius += particle.radius
+      approximationByChunck[i].position = sumVector(
+        approximationByChunck[i].position,
+        scaleVector(particle.position, particle.radius)
+      )
+    })
+    if(approximationByChunck[i].radius !== 0) approximationByChunck[i].position = scaleVector(
+      approximationByChunck[i].position,
+      1/approximationByChunck[i].radius
+    )
+  })
+
+  const s = vectorLength(difference([0, 0, 0], [
+    boxSize, boxSize, boxSize
+  ]));
+
+  if(gravity_on) dividedParticles.forEach(chunck => {
+    chunck.forEach((particle, i) => {
+      const unapproximatedParticles: any = [];
+      const distantParticlesApprox = approximationByChunck.filter((approx, j) => {
+        if(approx.radius === 0) return false;
+        if(i === j) return false;
+
+        const d = vectorLength(difference(particle.position, approx.position))
+        const howFar = d / s;
+        if(howFar < gravity_approximation && i !== j) {
+          unapproximatedParticles.push(...dividedParticles[j]);
+          return false;
+        }
+        return i !== j
+      });
+
+      let effectiveParticles = [...chunck, ...distantParticlesApprox, ...unapproximatedParticles]
+
+      particle.gravityChecks((effectiveParticles as any), gravity_constant, gravity_mass_contribution, gravity_distance_contribution)
+    })
+  })
 
   particles.forEach(particle => {
     particle.render(context, camera)
     if(!isPaused){
       if(!simulationConstants.DISABLED_BORDERS) particle.checkBorderCollisions();
-      if(simulationConstants.GRAVITY_ON) particle.gravityChecks(particles, gravity_constant, gravity_mass_contribution, gravity_distance_contribution);
+      //if(simulationConstants.GRAVITY_ON) particle.gravityChecks(particles, gravity_constant, gravity_mass_contribution, gravity_distance_contribution);
       particle.move();
     }
   });
@@ -153,7 +214,7 @@ function drawBackground(){
 
 setInterval(() => {
   if(simulationConstants.SHOW_FPS){
-    fpsAvg = (fpsAvg + fps) / 2;
+    fpsAvg = fps;
     fps = 0;
   }
 }, 1000);

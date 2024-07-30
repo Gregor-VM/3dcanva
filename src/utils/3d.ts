@@ -109,9 +109,10 @@ export class Particle {
       const vector = difference(object.position, this.position);
       const normalized = dotProduct(vector, vector)**gravity_distance_contribution;
       const scaledValue = normalized*(object.radius*gravity_mass_contribution);
-      this.a = scaleVector(this.a, gravity_constant);
+      let newAcc = scaleVector(this.a, gravity_constant);
+      if(scaledValue === 0) return false;
       const vectorNormalized = scaleVector(vector, 1/scaledValue);
-      this.a = sumVector(this.a, vectorNormalized);
+      this.a = sumVector(newAcc, vectorNormalized);
     })
   }
 

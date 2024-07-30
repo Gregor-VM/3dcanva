@@ -1,10 +1,10 @@
 import { simulationConstants } from "../utils/config";
 
-export function createSlider(id: string, name: string, min = 0, max = 100, value = 0, property: keyof typeof simulationConstants){
+export function createSlider(name: string, min = 0, max = 100, value = 0, property: keyof typeof simulationConstants){
   const container = document.createElement('div');
   container.classList.add('sliderContainer');
   const label = document.createElement('label');
-  label.setAttribute('for', id);
+  label.setAttribute('for', property);
   label.textContent = name;
   container.appendChild(label);
   const input = document.createElement('input');
@@ -12,7 +12,7 @@ export function createSlider(id: string, name: string, min = 0, max = 100, value
   input.setAttribute("min", String(min));
   input.setAttribute("max", String(max));
   input.setAttribute("value", String(value));
-  input.setAttribute("id", id);
+  input.setAttribute("id", property);
   input.classList.add('slider');
 
   input.oninput = (ev: any) => {
@@ -27,17 +27,17 @@ export function createSlider(id: string, name: string, min = 0, max = 100, value
 }
 
 
-export function createCheckbox(id: string, name: string, value = true, property: keyof typeof simulationConstants){
+export function createCheckbox(name: string, value = true, property: keyof typeof simulationConstants){
   const container = document.createElement('div');
   container.classList.add('checkboxContainer');
   const label = document.createElement('label');
-  label.setAttribute('for', id);
+  label.setAttribute('for', property);
   label.textContent = name;
   container.appendChild(label);
   const input = document.createElement('input');
   input.setAttribute("type", "checkbox");
   input.checked = value;
-  input.setAttribute("id", id);
+  input.setAttribute("id", property);
   input.classList.add('checkbox');
 
   input.onchange = (ev: any) => {
